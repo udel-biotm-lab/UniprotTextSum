@@ -24,7 +24,6 @@ def extract_function_section_from_uniprot(protein_id_list,uniprot_kb_file):
                 previous_line_is_ac=True
                 id_list=line[3:].split(';')
                 id_list=[i.strip() for i in id_list if i!='']
-                print(id_list)
 
                 for idi in id_list:
                     if idi in protein_id_list:
@@ -54,10 +53,14 @@ def extract_function_section_from_uniprot(protein_id_list,uniprot_kb_file):
                 previous_line_is_ac=False
                 for_function_section=False
 
+    json_file='./uniprot_protein_function.json'
+    with open(json_file,'w') as outfile:
+        json.dump(uniprot_function_dic,outfile)
+
     #sometimes, there will be a section in {}, delete that
     for fi in uniprot_function_dic.keys():
         function_section_text=uniprot_function_dic[fi]
-        if function_section_text.endswith('}.'):
+        if function_section_text.find('}.'):
             left_parathesis_index=function_section_text.rfind('{')
             function_section_text=function_section_text[:left_parathesis_index]
         uniprot_function_dic[fi]=function_section_text
@@ -72,6 +75,10 @@ def extract_function_section_from_uniprot(protein_id_list,uniprot_kb_file):
             #print(function_section_text)
             pubmed_index=function_section_text.find('PubMed:')
             by_similarity_index=function_section_text.find('(By similarity')
+
+            #if nothing is found, just break
+            if pubmed_index==-1:
+                break
 
             #deal with the cases when there are multiple PubMed for one sentence
             if pubmed_index==0:
@@ -122,7 +129,7 @@ def extract_function_section_from_uniprot(protein_id_list,uniprot_kb_file):
         if pi not in protein_pubmed_dic:
             print("Protein not found: ",pi)
 
-
+    return protein_pubmed_dic
 '''
 for pi in pubmed_dic.keys():
     sent_list=query_abstract_text(pi)
@@ -143,16 +150,31 @@ for pi in pubmed_dic.keys():
         print('Score for this sentence:',score_list)
 '''
 
+def merge_sentence_based_on_pmid(protein_pubmed_dic_json):
+    with open(protein_pubmed_dic_json) as jfile:
+        protein_pubmed_dic=json.load(jfile)
+    pubmed_dic={}
+    for proteini in protein_pubmed_dic.keys():
+        for pmidi in protein_pubmed_dic[proteini]:
+            if pmidi not in pubmed_dic:
+                pubmed_dic[pmidi]=[]
+            for senti in protein_pubmed_dic[proteini][pmidi]:
+                if senti not in pubmed_dic[pmidi]:
+                    pubmed_dic[pmidi].append(senti)
+    json_file='./pubmed_dic.json'
+    with open(json_file,'w') as outfile:
+        json.dump(pubmed_dic,outfile)
+
 if __name__ == "__main__":
     protein_list_file='protein_list.txt'
     proteinList = pd.read_csv(protein_list_file,header=None).iloc[:,0].tolist()
-    print(proteinList)
 
     uniprot_kb_file='uniprot_sprot.dat'
-    protein_pubmed_dic=extract_function_section_from_uniprot(proteinList,uniprot_kb_file)
-    print(protein_pubmed_dic)
+    #protein_pubmed_dic=extract_function_section_from_uniprot(proteinList,uniprot_kb_file)
+    #print(protein_pubmed_dic)
     json_file='./uniprot_protein_pubmed_dic.json'
-    with open(json_file,'w') as outfile:
-        json.dump(protein_pubmed_dic,outfile)
+    #with open(json_file,'w') as outfile:
+    #    json.dump(protein_pubmed_dic,outfile)
+    merge_sentence_based_on_pmid(json_file)
 
 
