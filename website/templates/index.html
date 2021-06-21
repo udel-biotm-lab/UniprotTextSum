@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+<!-- <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script type="text/javascript" src="/js/jquery-ui.js"></script>
+<script type="text/javascript" src="/js/autocomplete.js"></script> -->
+{% block body %}
+
+<div class="container">
+
+<div class="row">
+    <div class="col-sm-12">
+      <p>&nbsp;</p>
+      <h3>Abstracts: {{listOfPmids|length}}</h3><br>
+      <ol style="list-group">
+        {%  for pmid in listOfPmids %}
+          <li><a href={{url_for('uniprot',pmid=pmid)}}>{{pmid}}</a>*</li>
+        {% endfor %}
+
+      </ol>
+      
+    </div>
+</div>
+
+<p>&nbsp;</p>
+
+
+</div>
+
+
+{% endblock %}

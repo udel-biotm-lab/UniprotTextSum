@@ -159,7 +159,7 @@ def merge_sentence_based_on_pmid(protein_pubmed_dic_json):
             if pmidi not in pubmed_dic:
                 pubmed_dic[pmidi]=[]
             for senti in protein_pubmed_dic[proteini][pmidi]:
-                if senti not in pubmed_dic[pmidi]:
+                if senti not in pubmed_dic[pmidi] and senti.find('ECO:')<0:
                     pubmed_dic[pmidi].append(senti)
     json_file='./pubmed_dic.json'
     with open(json_file,'w') as outfile:

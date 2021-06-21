@@ -1,0 +1,61 @@
+{% extends 'layout.html' %}
+
+
+{% block body %}
+<div class="container">
+
+  <div class="row">
+    <div class="col-sm-4">
+      <p>&nbsp;</p>
+      <p><strong>PMID</strong>: <font color="red">{{ pmid }}</font></p>
+      <!-- <p><strong>{{entityLabel}}</strong>:&nbsp;<font color="red">{{ entityDesc }}</font>&nbsp;&nbsp;({{ entityId }})</p> -->
+      <span class="clear"></span>
+    </div>
+    <div class="col-sm-3">
+    </div>
+    <div class="col-sm-5">
+      <p>&nbsp;</p>
+
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-12">
+      <strong>Title</strong> :    {{ text[0]| safe }}<br><br>
+      <strong>Abstract</strong> :
+      <ol style="list-group">
+        {%  for index,sen in text.items() %}
+          {% if index == 0 %}
+
+          {% else %}
+            <li>  {{ sen| safe }} </li>
+          {% endif %}
+        {% endfor %}
+      </ol>
+
+    </div>
+    </div>
+
+  <div class="row">
+    <div class="col-sm-12">
+      <strong>Summary Sentence:</strong> :
+      <ol style="list-group">
+        {%  for index,sen in summary_text.items() %}
+          {% if index == 0 %}
+
+          {% else %}
+            <li>  {{ sen| safe }} </li>
+          {% endif %}
+        {% endfor %}
+      </ol>
+
+    </div>
+    </div>
+
+    </div>
+  <p>&nbsp;</p>
+
+
+  <p>&nbsp;</p>
+  
+{% endblock %}
