@@ -8,6 +8,7 @@ import pandas as pd
 def extract_function_section_from_uniprot(protein_id_list,uniprot_kb_file):
     #uniprot_kb_file='./Q9NZC2.txt'
     uniprot_function_dic={}
+    uniprot_id_to_gene_name_dic={}
     with codecs.open(uniprot_kb_file,'r','utf8') as kbf:
         count=0
         previous_line_is_ac=False
@@ -28,6 +29,9 @@ def extract_function_section_from_uniprot(protein_id_list,uniprot_kb_file):
                 for idi in id_list:
                     if idi in protein_id_list:
                         uniprot_function_dic[idi]=''
+                    elif len(protein_id_list)==0:
+                        uniprot_function_dic[idi]=''
+                        break
 
                 #print(id_list)
             elif line.startswith('CC   -!- FUNCTION:'):
@@ -39,6 +43,9 @@ def extract_function_section_from_uniprot(protein_id_list,uniprot_kb_file):
                 for idi in id_list:
                     if idi in protein_id_list:
                         uniprot_function_dic[idi]+=line[len('CC   -!- FUNCTION:'):]
+                    elif len(protein_id_list)==0:
+                        uniprot_function_dic[idi]+=line[len('CC   -!- FUNCTION:'):]
+                        break
 
             elif line.startswith('CC       '):
                 previous_line_is_ac=False
@@ -48,7 +55,25 @@ def extract_function_section_from_uniprot(protein_id_list,uniprot_kb_file):
                         if idi in protein_id_list:
                             uniprot_function_dic[idi]+=' '
                             uniprot_function_dic[idi]+=line[len('CC       '):]
-
+                        elif len(protein_id_list)==0:
+                            uniprot_function_dic[idi]+=' '
+                            uniprot_function_dic[idi]+=line[len('CC       '):]
+                            break
+            elif line.startswith('GN   Name='):
+                gene_name=line[len('GN   Name='):]
+                semicolon_index=gene_name.find(';')
+                parentheses_index=gene_name.find('{')
+                if parentheses_index>0 and parentheses_index<semicolon_index:
+                    gene_name=gene_name[:parentheses_index]
+                elif semicolon_index<0:
+                    gene_name=gene_name[:parentheses_index]
+                else:
+                    gene_name=gene_name[:semicolon_index]
+                gene_name=gene_name.strip()
+                previous_line_is_ac=False
+                for_function_section=False
+                for idi in id_list:
+                    uniprot_id_to_gene_name_dic[idi]=gene_name
             else:
                 previous_line_is_ac=False
                 for_function_section=False
@@ -56,6 +81,10 @@ def extract_function_section_from_uniprot(protein_id_list,uniprot_kb_file):
     json_file='./uniprot_protein_function.json'
     with open(json_file,'w') as outfile:
         json.dump(uniprot_function_dic,outfile)
+
+    json_file='./uniprot_id_to_gene_name.json'
+    with open(json_file,'w') as outfile:
+        json.dump(uniprot_id_to_gene_name_dic,outfile)
 
     #sometimes, there will be a section in {}, delete that
     for fi in uniprot_function_dic.keys():
@@ -160,21 +189,21 @@ def merge_sentence_based_on_pmid(protein_pubmed_dic_json):
                 pubmed_dic[pmidi]=[]
             for senti in protein_pubmed_dic[proteini][pmidi]:
                 if senti not in pubmed_dic[pmidi] and senti.find('ECO:')<0:
-                    pubmed_dic[pmidi].append(senti)
+                    pubmed_dic[pmidi].append((senti,proteini))
     json_file='./pubmed_dic.json'
     with open(json_file,'w') as outfile:
         json.dump(pubmed_dic,outfile)
 
 if __name__ == "__main__":
-    protein_list_file='protein_list.txt'
-    proteinList = pd.read_csv(protein_list_file,header=None).iloc[:,0].tolist()
+    #protein_list_file='protein_list.txt'
+    #proteinList = pd.read_csv(protein_list_file,header=None).iloc[:,0].tolist()
 
-    uniprot_kb_file='uniprot_sprot.dat'
-    #protein_pubmed_dic=extract_function_section_from_uniprot(proteinList,uniprot_kb_file)
+    uniprot_kb_file='uniprot_function.txt'
+    protein_pubmed_dic=extract_function_section_from_uniprot([],uniprot_kb_file)
     #print(protein_pubmed_dic)
     json_file='./uniprot_protein_pubmed_dic.json'
-    #with open(json_file,'w') as outfile:
-    #    json.dump(protein_pubmed_dic,outfile)
+    with open(json_file,'w') as outfile:
+        json.dump(protein_pubmed_dic,outfile)
     merge_sentence_based_on_pmid(json_file)
 
 
