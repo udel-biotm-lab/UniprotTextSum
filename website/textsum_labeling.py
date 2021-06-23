@@ -89,7 +89,7 @@ def uniprot(pmid):
 
         for si in range(len(pubmed_dic[str(pmid)])):
             SumSenToDisplay[si+1]= '<a href=\"https://www.uniprot.org/uniprot/'+pubmed_dic[str(pmid)][si][1]\
-            +'#names_and_taxonomy\">'+uniprot_id_to_gene_name_dic[pubmed_dic[str(pmid)][si][1]]+'</a>'+pubmed_dic[str(pmid)][si][0]
+            +'#names_and_taxonomy\">'+uniprot_id_to_gene_name_dic[pubmed_dic[str(pmid)][si][1]]+'</a>'+' '+pubmed_dic[str(pmid)][si][0]
         return render_template('showAbstract.html', text=SenToDisplay, pmid=pmid, summary_text=SumSenToDisplay)
     else:
         return render_template('exitPage.html')
